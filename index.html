@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Квадрат-ИИ</title>
+<style>
+:root{--bg:#f6f7fb;--card:#fff;--ink:#1f2937;--muted:#6b7280;--accent:#5b5bd6;--ok:#198754;--bad:#c0392b;--line:#e5e7eb}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:Arial,sans-serif;color:var(--ink)}
+header{background:#fff;border-bottom:1px solid var(--line);padding:22px 28px;position:sticky;top:0;z-index:2}.brand{font-size:28px;font-weight:700}.tag{color:var(--muted);margin-top:4px}
+main{max-width:1100px;margin:28px auto;padding:0 18px}.grid{display:grid;grid-template-columns:1.3fr .8fr;gap:18px}@media(max-width:800px){.grid{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px;box-shadow:0 4px 18px rgba(0,0,0,.04)}
+h2{margin-top:0}.eq{font-size:28px;text-align:center;padding:18px;border-radius:14px;background:#f1f2ff;margin:14px 0}
+.row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.field label{display:block;color:var(--muted);font-size:13px;margin-bottom:6px}.field input,.student input,.select{width:100%;padding:12px;border:1px solid #d1d5db;border-radius:10px;font-size:16px}
+button{border:0;border-radius:10px;padding:12px 16px;cursor:pointer;font-size:15px;background:var(--accent);color:#fff}.secondary{background:#eef0ff;color:#3434a3}.danger{background:#fff0ef;color:#a52c21}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.result{margin-top:16px;padding:16px;border-radius:14px;background:#fafafa;border:1px solid var(--line)}.ok{color:var(--ok)}.bad{color:var(--bad)}.muted{color:var(--muted)}
+.step{padding:12px 14px;border:1px solid var(--line);border-radius:12px;margin:10px 0}.step .title{font-weight:700}.hint{background:#fff8db;border-left:4px solid #e5b700;padding:10px;border-radius:8px;margin-top:8px}
+.kpi{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.kpi div{background:#f9fafb;border:1px solid var(--line);padding:14px;border-radius:12px;text-align:center}.big{font-size:24px;font-weight:700}
+small{color:var(--muted)}
+</style>
+</head>
+<body>
+<header><div class="brand">КВАДРАТ-ИИ</div><div class="tag">Решай • Проверяй • Понимай</div></header>
+<main>
+<div class="grid">
+<section class="card">
+<h2>Проверь моё решение</h2>
+<div class="eq" id="equation">2x² − 7x + 3 = 0</div>
+<div class="row">
+<div class="field"><label>a</label><input id="a" type="number" value="2"></div>
+<div class="field"><label>b</label><input id="b" type="number" value="-7"></div>
+<div class="field"><label>c</label><input id="c" type="number" value="3"></div>
+</div>
+<div class="step"><div class="title">Шаг 1. Дискриминант</div><input id="studentD" class="student" type="number" placeholder="Введите D"></div>
+<div class="step"><div class="title">Шаг 2. Количество действительных корней</div>
+<select id="count" class="select"><option value="">Выберите</option><option value="0">0</option><option value="1">1</option><option value="2">2</option></select></div>
+<div class="step" id="rootsStep"><div class="title">Шаг 3. Корни</div><div class="row"><div class="field"><label>x₁</label><input id="x1" type="number" step="any"></div><div class="field"><label>x₂</label><input id="x2" type="number" step="any"></div><div></div></div></div>
+<div class="actions"><button onclick="checkSolution()">Проверить решение</button><button class="secondary" onclick="showExact()">Показать решение</button><button class="secondary" onclick="newProblem()">Новое уравнение</button></div>
+<div id="feedback" class="result"><span class="muted">Введите свои результаты и нажмите «Проверить решение».</span></div>
+</section>
+<section class="card">
+<h2>Мои результаты</h2>
+<div class="kpi"><div><div class="big" id="score">0</div><small>проверок</small></div><div><div class="big" id="correct">0</div><small>верных</small></div><div><div class="big" id="errors">0</div><small>ошибок</small></div></div>
+<div class="result" style="margin-top:18px"><b>Основная зона тренировки</b><div id="weak" class="muted" style="margin-top:6px">Пока данных недостаточно.</div></div>
+<h3>Тренировка</h3><p class="muted">После ошибки можно получить новое задание по тому же навыку.</p><button onclick="practice()">Дать тренировочное задание</button>
+<div id="practice" class="result"></div>
+</section>
+</div>
+</main>
+<script>
+let stats={checks:0,correct:0,errors:{D:0,count:0,roots:0}};
+let current={a:2,b:-7,c:3};
+function calc(a,b,c){let D=b*b-4*a*c;if(D<0)return{D,count:0,roots:[]};if(D===0)return{D,count:1,roots:[-b/(2*a)]};let s=Math.sqrt(D);return{D,count:2,roots:[(-b+s)/(2*a),(-b-s)/(2*a)]}}
+function fmt(x){return Number.isInteger(x)?String(x):String(Number(x.toFixed(6))) }
+function refresh(){document.getElementById('score').textContent=stats.checks;document.getElementById('correct').textContent=stats.correct;document.getElementById('errors').textContent=stats.errors.D+stats.errors.count+stats.errors.roots;let e=stats.errors;let k=Object.entries(e).sort((a,b)=>b[1]-a[1])[0];document.getElementById('weak').textContent=k&&k[1]>0?({D:'вычисление дискриминанта',count:'определение количества корней',roots:'вычисление корней'}[k[0]])+' — '+k[1]+' ошибок':'Пока данных недостаточно.'}
+function checkSolution(){let a=+document.getElementById('a').value,b=+document.getElementById('b').value,c=+document.getElementById('c').value;if(a===0){document.getElementById('feedback').innerHTML='<span class="bad"><b>Ошибка:</b> a не может быть равно 0.</span>';return}current={a,b,c};let r=calc(a,b,c);let msgs=[];let all=true;let d=+document.getElementById('studentD').value;let cnt=+document.getElementById('count').value;let x1=document.getElementById('x1').value===''?null:+document.getElementById('x1').value;let x2=document.getElementById('x2').value===''?null:+document.getElementById('x2').value;
+if(Number.isNaN(d)||Math.abs(d-r.D)>1e-9){all=false;stats.errors.D++;msgs.push('<div class="bad">❌ Шаг 1: проверь вычисление D = b² − 4ac.</div><div class="hint">Подсказка: отдельно проверь b² и знак произведения 4ac.</div>')}else msgs.push('<div class="ok">✅ Дискриминант вычислен правильно.</div>');
+if(cnt!==r.count){all=false;stats.errors.count++;msgs.push('<div class="bad">❌ Шаг 2: количество корней не совпадает с эталоном.</div><div class="hint">Подсказка: сравни знак D с правилами D&lt;0, D=0, D&gt;0.</div>')}else msgs.push('<div class="ok">✅ Количество корней определено правильно.</div>');
+if(r.count===1){if(x1===null||Math.abs(x1-r.roots[0])>1e-7){all=false;stats.errors.roots++;msgs.push('<div class="bad">❌ Проверь единственный корень.</div><div class="hint">Подсказка: проверь знак в числителе и знаменатель 2a.</div>')}else msgs.push('<div class="ok">✅ Корень найден правильно.</div>')}
+if(r.count===2){if(x1===null||x2===null){all=false;stats.errors.roots++;msgs.push('<div class="bad">❌ Введи оба корня.</div>')}else{let g=[x1,x2].sort(), e=r.roots.slice().sort();if(Math.abs(g[0]-e[0])>1e-7||Math.abs(g[1]-e[1])>1e-7){all=false;stats.errors.roots++;msgs.push('<div class="bad">❌ Проверь значения x₁ и x₂.</div><div class="hint">Подсказка: подставь каждый найденный корень в исходное уравнение.</div>')}else msgs.push('<div class="ok">✅ Оба корня найдены правильно.</div>')}}
+stats.checks++;if(all){stats.correct++;document.getElementById('feedback').innerHTML='<b class="ok">🎉 Решение полностью верно.</b><div class="result">D = '+fmt(r.D)+'<br>Количество действительных корней: '+r.count+(r.count?'<br>Корни: '+r.roots.map(fmt).join(' и '):'')+'</div>'}else document.getElementById('feedback').innerHTML=msgs.join('');refresh()}
+function showExact(){let a=+document.getElementById('a').value,b=+document.getElementById('b').value,c=+document.getElementById('c').value;if(a===0)return;let r=calc(a,b,c);document.getElementById('feedback').innerHTML='<b>Эталонное решение</b><div class="result">D = '+fmt(r.D)+'<br>D'+(r.D<0?' < 0':r.D>0?' > 0':' = 0')+'<br>Количество корней: '+r.count+(r.count?'<br>Корни: '+r.roots.map(fmt).join(' и '):'')+'</div>'}
+function newProblem(){let list=[[1,-5,6],[3,-8,4],[1,-6,9],[1,2,5],[-2,7,-3],[2,1,-3],[4,-4,-3]];let q=list[Math.floor(Math.random()*list.length)];document.getElementById('a').value=q[0];document.getElementById('b').value=q[1];document.getElementById('c').value=q[2];document.getElementById('studentD').value='';document.getElementById('count').value='';document.getElementById('x1').value='';document.getElementById('x2').value='';document.getElementById('feedback').innerHTML='<span class="muted">Новое задание готово.</span>'}
+function practice(){let a=1,b=-6,c=8;let r=calc(a,b,c);document.getElementById('practice').innerHTML='<b>Тренировочное задание</b><div class="eq">x² − 6x + 8 = 0</div><div>Найди D и количество действительных корней самостоятельно, затем введи их в основной блок.</div>'}
+refresh();
+</script>
+</body></html>
