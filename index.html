@@ -61,14 +61,23 @@ if(r.count===2){if(x1===null||x2===null){all=false;stats.errors.roots++;msgs.pus
 stats.checks++;if(all){stats.correct++;document.getElementById('feedback').innerHTML='<b class="ok">🎉 Решение полностью верно.</b><div class="result">D = '+fmt(r.D)+'<br>Количество действительных корней: '+r.count+(r.count?'<br>Корни: '+r.roots.map(fmt).join(' и '):'')+'</div>'}else document.getElementById('feedback').innerHTML=msgs.join('');refresh()}
 function showExact(){let a=+document.getElementById('a').value,b=+document.getElementById('b').value,c=+document.getElementById('c').value;syncEquation(a,b,c);if(a===0)return;let r=calc(a,b,c);document.getElementById('feedback').innerHTML='<b>Эталонное решение</b><div class="result">D = '+fmt(r.D)+'<br>D'+(r.D<0?' < 0':r.D>0?' > 0':' = 0')+'<br>Количество корней: '+r.count+(r.count?'<br>Корни: '+r.roots.map(fmt).join(' и '):'')+'</div>'}
 function equationText(a,b,c){
-let s=(a= = = 1?'':a= = =-1?'-':fmt (a))+'x²';
+let s=(a===1?'':a===-1?'−':fmt(a))+'x²';
 if(b!==0)s+=(b>0?' + ':' - ')+(Math.abs(b)===1?'':fmt(Math.abs(b)))+'x';
 if(c!==0)s+=(c>0?' + ':' − ')+fmt(Math.abs(c));
 return s+' = 0'
 }
 function syncEquation(a,b,c){document.getElementById('equation').textContent=equationText(a,b,c)}
 function newProblem(){let list=[[1,-5,6],[3,-8,4],[1,-6,9],[1,2,5],[-2,7,-3],[2,1,-3],[4,-4,-3]];let previous=current;let choices=list.filter(q=>q[0]!==previous.a||q[1]!==previous.b||q[2]!==previous.c);let q=choices[Math.floor(Math.random()*choices.length)];current={a:q[0],b:q[1],c:q[2]};document.getElementById('a').value=q[0];document.getElementById('b').value=q[1];document.getElementById('c').value=q[2];syncEquation(q[0],q[1],q[2]);document.getElementById('studentD').value='';document.getElementById('count').value='';document.getElementById('x1').value='';document.getElementById('x2').value='';document.getElementById('feedback').innerHTML='<span class="muted">Новое задание готово. Реши уравнение и введи результаты.</span>'}
-function practice(){let a=1,b=-6,c=8;let r=calc(a,b,c);document.getElementById('practice').innerHTML='<b>Тренировочное задание</b><div class="eq">x² − 6x + 8 = 0</div><div>Найди D и количество действительных корней самостоятельно, затем введи их в основной блок.</div>'}
+function practice(){
+let e=stats.errors;
+let skill=Object.entries(e).sort((a,b)=>b[1]-a[1])[0];
+let key=skill&&skill[1]>0?skill[0]:'D';
+let tasks={D:[[1,-6,8],[2,-5,-3],[1,4,-5]],count:[[1,2,5],[1,-6,9],[3,-8,4]],roots:[[1,-5,6],[2,1,-3],[-2,7,-3]]};
+let list=tasks[key];
+let q=list[Math.floor(Math.random()*list.length)];
+let labels={D:'Потренируй вычисление дискриминанта.',count:'Потренируй определение количества действительных корней.',roots:'Потренируй вычисление корней.'};
+document.getElementById('practice').innerHTML='<b>Тренировочное задание по выявленной зоне</b><div class="eq">'+equationText(q[0],q[1],q[2])+'</div><div>'+labels[key]+' Реши это уравнение самостоятельно. Основное задание слева при этом не изменяется.</div>';
+}
 refresh();
 </script>
 </body></html>
