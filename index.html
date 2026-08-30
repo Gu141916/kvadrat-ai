@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="ru">
 <head>
@@ -36,10 +37,27 @@ small{color:var(--muted)}
 <select id="count" class="select"><option value="">Выберите</option><option value="0">0</option><option value="1">1</option><option value="2">2</option></select></div>
 <div class="step" id="rootsStep"><div class="title">Шаг 3. Корни</div><div class="row"><div class="field"><label>x₁</label><input id="x1" type="number" step="any"></div><div class="field"><label>x₂</label><input id="x2" type="number" step="any"></div><div></div></div></div>
 <div class="actions"><button onclick="checkSolution()">Проверить решение</button><button class="secondary" onclick="showExact()">Показать решение</button><button class="secondary" onclick="newProblem()">Новое уравнение</button></div>
+
 <div class="result" style="margin-top:14px">
-<b>Есть своё задание из учебника, брошюры или домашней работы?</b>
-<div class="muted" style="margin-top:6px">Введите коэффициенты a, b и c выше и нажмите «Использовать моё уравнение».</div>
-<div class="actions"><button class="secondary" onclick="useOwnEquation()">Использовать моё уравнение</button></div>
+  <b>Есть своё задание из учебника, брошюры или домашней работы?</b>
+  <div class="muted" style="margin-top:6px">
+    Нажмите кнопку и введите коэффициенты своего квадратного уравнения.
+  </div>
+  <div class="actions">
+    <button class="secondary" id="toggleOwnBtn" onclick="toggleOwnEquation()">Проверить своё уравнение</button>
+  </div>
+
+  <div id="ownEquationPanel" style="display:none; margin-top:12px">
+    <div class="row">
+      <div class="field"><label>a</label><input id="ownA" type="number" step="any" placeholder="a"></div>
+      <div class="field"><label>b</label><input id="ownB" type="number" step="any" placeholder="b"></div>
+      <div class="field"><label>c</label><input id="ownC" type="number" step="any" placeholder="c"></div>
+    </div>
+    <div class="actions" style="margin-top:10px">
+      <button class="secondary" onclick="loadOwnEquation()">Загрузить моё уравнение</button>
+    </div>
+    <div id="ownEquationMsg" class="muted" style="margin-top:8px"></div>
+  </div>
 </div>
 <div id="feedback" class="result"><span class="muted">Введите свои результаты и нажмите «Проверить решение».</span></div>
 </section>
@@ -79,14 +97,7 @@ document.getElementById('x1').value='';
 document.getElementById('x2').value='';
 document.getElementById('feedback').innerHTML='<span class="muted">'+message+'</span>';
 }
-function useOwnEquation(){
-let a=Number(document.getElementById('a').value);
-let b=Number(document.getElementById('b').value);
-let c=Number(document.getElementById('c').value);
-if(!Number.isFinite(a)||!Number.isFinite(b)||!Number.isFinite(c)){
-document.getElementById('feedback').innerHTML='<span class="bad"><b>Ошибка:</b> введите числовые коэффициенты a, b и c.</span>';
-return;
-}
+
 if(a===0){
 document.getElementById('feedback').innerHTML='<span class="bad"><b>Ошибка:</b> a не может быть равно 0, иначе уравнение не является квадратным.</span>';
 return;
@@ -95,6 +106,50 @@ current={a,b,c};
 syncEquation(a,b,c);
 clearStudentAnswer('Ваше уравнение загружено. Решите его самостоятельно, затем введите результаты для проверки.');
 }
+
+function toggleOwnEquation(){
+  const panel=document.getElementById('ownEquationPanel');
+  const btn=document.getElementById('toggleOwnBtn');
+  const opening=panel.style.display==='none'||panel.style.display==='';
+  panel.style.display=opening?'block':'none';
+  btn.textContent=opening?'Скрыть ввод':'Проверить своё уравнение';
+  if(opening){
+    const field=document.getElementById('ownA');
+    if(field) field.focus();
+  }
+}
+
+function loadOwnEquation(){
+  const av=document.getElementById('ownA').value.trim();
+  const bv=document.getElementById('ownB').value.trim();
+  const cv=document.getElementById('ownC').value.trim();
+  const msg=document.getElementById('ownEquationMsg');
+
+  if(av===''||bv===''||cv===''){
+    msg.innerHTML='<span class="bad"><b>Ошибка:</b> заполните все три коэффициента a, b и c.</span>';
+    return;
+  }
+
+  const a=Number(av), b=Number(bv), c=Number(cv);
+
+  if(!Number.isFinite(a)||!Number.isFinite(b)||!Number.isFinite(c)){
+    msg.innerHTML='<span class="bad"><b>Ошибка:</b> введите числовые коэффициенты.</span>';
+    return;
+  }
+  if(a===0){
+    msg.innerHTML='<span class="bad"><b>Ошибка:</b> a не может быть равно 0, иначе уравнение не является квадратным.</span>';
+    return;
+  }
+
+  current={a,b,c};
+  document.getElementById('a').value=a;
+  document.getElementById('b').value=b;
+  document.getElementById('c').value=c;
+  syncEquation(a,b,c);
+  clearStudentAnswer('Ваше уравнение загружено. Решите его самостоятельно, затем введите результаты для проверки.');
+  msg.innerHTML='<span class="good">Уравнение загружено: <b>'+equationText(a,b,c)+' = 0</b></span>';
+}
+
 function newProblem(){let list=[[1,-5,6],[3,-8,4],[1,-6,9],[1,2,5],[-2,7,-3],[2,1,-3],[4,-4,-3]];let previous=current;let choices=list.filter(q=>q[0]!==previous.a||q[1]!==previous.b||q[2]!==previous.c);let q=choices[Math.floor(Math.random()*choices.length)];current={a:q[0],b:q[1],c:q[2]};document.getElementById('a').value=q[0];document.getElementById('b').value=q[1];document.getElementById('c').value=q[2];syncEquation(q[0],q[1],q[2]);clearStudentAnswer('Новое задание готово. Реши уравнение и введи результаты.')}
 function practice(){
 let e=stats.errors;
