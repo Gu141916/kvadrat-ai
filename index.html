@@ -98,15 +98,6 @@ document.getElementById('x2').value='';
 document.getElementById('feedback').innerHTML='<span class="muted">'+message+'</span>';
 }
 
-if(a===0){
-document.getElementById('feedback').innerHTML='<span class="bad"><b>Ошибка:</b> a не может быть равно 0, иначе уравнение не является квадратным.</span>';
-return;
-}
-current={a,b,c};
-syncEquation(a,b,c);
-clearStudentAnswer('Ваше уравнение загружено. Решите его самостоятельно, затем введите результаты для проверки.');
-}
-
 function toggleOwnEquation(){
   const panel=document.getElementById('ownEquationPanel');
   const btn=document.getElementById('toggleOwnBtn');
@@ -147,7 +138,7 @@ function loadOwnEquation(){
   document.getElementById('c').value=c;
   syncEquation(a,b,c);
   clearStudentAnswer('Ваше уравнение загружено. Решите его самостоятельно, затем введите результаты для проверки.');
-  msg.innerHTML='<span class="good">Уравнение загружено: <b>'+equationText(a,b,c)+' = 0</b></span>';
+  msg.innerHTML='<span class="ok">Уравнение загружено: <b>'+equationText(a,b,c)+'</b></span>';
 }
 
 function newProblem(){let list=[[1,-5,6],[3,-8,4],[1,-6,9],[1,2,5],[-2,7,-3],[2,1,-3],[4,-4,-3]];let previous=current;let choices=list.filter(q=>q[0]!==previous.a||q[1]!==previous.b||q[2]!==previous.c);let q=choices[Math.floor(Math.random()*choices.length)];current={a:q[0],b:q[1],c:q[2]};document.getElementById('a').value=q[0];document.getElementById('b').value=q[1];document.getElementById('c').value=q[2];syncEquation(q[0],q[1],q[2]);clearStudentAnswer('Новое задание готово. Реши уравнение и введи результаты.')}
@@ -164,3 +155,5 @@ document.getElementById('practice').innerHTML='<b>Тренировочное з�
 refresh();
 </script>
 </body></html>
+
+
