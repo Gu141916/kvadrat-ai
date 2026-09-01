@@ -1,9 +1,8 @@
-
 <!doctype html>
 <html lang="ru">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Квадрат-ИИ</title>
 <style>
 :root{--bg:#f6f7fb;--card:#fff;--ink:#1f2937;--muted:#6b7280;--accent:#5b5bd6;--ok:#198754;--bad:#c0392b;--line:#e5e7eb}
@@ -13,11 +12,11 @@ main{max-width:1100px;margin:28px auto;padding:0 18px}.grid{display:grid;grid-te
 .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px;box-shadow:0 4px 18px rgba(0,0,0,.04)}
 h2{margin-top:0}.eq{font-size:28px;text-align:center;padding:18px;border-radius:14px;background:#f1f2ff;margin:14px 0}
 .row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.field label{display:block;color:var(--muted);font-size:13px;margin-bottom:6px}.field input,.student input,.select{width:100%;padding:12px;border:1px solid #d1d5db;border-radius:10px;font-size:16px}
-button{border:0;border-radius:10px;padding:12px 16px;cursor:pointer;font-size:15px;background:var(--accent);color:#fff}.secondary{background:#eef0ff;color:#3434a3}.danger{background:#fff0ef;color:#a52c21}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+button{border:0;border-radius:10px;padding:12px 16px;cursor:pointer;font-size:15px;background:var(--accent);color:#fff}.secondary{background:#eef0ff;color:#3434a3}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
 .result{margin-top:16px;padding:16px;border-radius:14px;background:#fafafa;border:1px solid var(--line)}.ok{color:var(--ok)}.bad{color:var(--bad)}.muted{color:var(--muted)}
 .step{padding:12px 14px;border:1px solid var(--line);border-radius:12px;margin:10px 0}.step .title{font-weight:700}.hint{background:#fff8db;border-left:4px solid #e5b700;padding:10px;border-radius:8px;margin-top:8px}
 .kpi{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.kpi div{background:#f9fafb;border:1px solid var(--line);padding:14px;border-radius:12px;text-align:center}.big{font-size:24px;font-weight:700}
-small{color:var(--muted)}
+small{color:var(--muted)}.hidden{display:none}
 </style>
 </head>
 <body>
@@ -27,86 +26,228 @@ small{color:var(--muted)}
 <section class="card">
 <h2>Проверь моё решение</h2>
 <div class="eq" id="equation">2x² − 7x + 3 = 0</div>
+
 <div class="row">
 <div class="field"><label>a</label><input id="a" type="number" value="2"></div>
 <div class="field"><label>b</label><input id="b" type="number" value="-7"></div>
 <div class="field"><label>c</label><input id="c" type="number" value="3"></div>
 </div>
-<div class="step"><div class="title">Шаг 1. Дискриминант</div><input id="studentD" class="student" type="number" placeholder="Введите D"></div>
+
+<div class="step"><div class="title">Шаг 1. Дискриминант</div><input id="studentD" class="student" type="number" step="any" placeholder="Введите D"></div>
 <div class="step"><div class="title">Шаг 2. Количество действительных корней</div>
 <select id="count" class="select"><option value="">Выберите</option><option value="0">0</option><option value="1">1</option><option value="2">2</option></select></div>
-<div class="step" id="rootsStep"><div class="title">Шаг 3. Корни</div><div class="row"><div class="field"><label>x₁</label><input id="x1" type="number" step="any"></div><div class="field"><label>x₂</label><input id="x2" type="number" step="any"></div><div></div></div></div>
-<div class="actions"><button onclick="checkSolution()">Проверить решение</button><button class="secondary" onclick="showExact()">Показать решение</button><button class="secondary" onclick="newProblem()">Новое уравнение</button></div>
+<div class="step"><div class="title">Шаг 3. Корни</div><div class="row">
+<div class="field"><label>x₁</label><input id="x1" type="number" step="any"></div>
+<div class="field"><label>x₂</label><input id="x2" type="number" step="any"></div><div></div>
+</div></div>
+
+<div class="actions">
+<button id="checkBtn">Проверить решение</button>
+<button class="secondary" id="showBtn">Показать решение</button>
+<button class="secondary" id="newBtn">Новое уравнение</button>
+</div>
 
 <div class="result" style="margin-top:14px">
-  <b>Есть своё задание из учебника, брошюры или домашней работы?</b>
-  <div class="muted" style="margin-top:6px">
-    Нажмите кнопку и введите коэффициенты своего квадратного уравнения.
-  </div>
-  <div class="actions">
-    <button class="secondary" id="toggleOwnBtn" onclick="toggleOwnEquation()">Проверить своё уравнение</button>
-  </div>
+<b>Есть своё задание из учебника, брошюры или домашней работы?</b>
+<div class="muted" style="margin-top:6px">Нажмите кнопку и введите коэффициенты своего квадратного уравнения.</div>
+<div class="actions"><button class="secondary" id="toggleOwnBtn">Проверить своё уравнение</button></div>
 
-  <div id="ownEquationPanel" style="display:none; margin-top:12px">
-    <div class="row">
-      <div class="field"><label>a</label><input id="ownA" type="number" step="any" placeholder="a"></div>
-      <div class="field"><label>b</label><input id="ownB" type="number" step="any" placeholder="b"></div>
-      <div class="field"><label>c</label><input id="ownC" type="number" step="any" placeholder="c"></div>
-    </div>
-    <div class="actions" style="margin-top:10px">
-      <button class="secondary" onclick="loadOwnEquation()">Загрузить моё уравнение</button>
-    </div>
-    <div id="ownEquationMsg" class="muted" style="margin-top:8px"></div>
-  </div>
+<div id="ownEquationPanel" class="hidden" style="margin-top:12px">
+<div class="row">
+<div class="field"><label>a</label><input id="ownA" type="number" step="any" placeholder="a"></div>
+<div class="field"><label>b</label><input id="ownB" type="number" step="any" placeholder="b"></div>
+<div class="field"><label>c</label><input id="ownC" type="number" step="any" placeholder="c"></div>
 </div>
+<div class="actions"><button class="secondary" id="loadOwnBtn">Загрузить моё уравнение</button></div>
+<div id="ownEquationMsg" class="muted" style="margin-top:8px"></div>
+</div>
+</div>
+
 <div id="feedback" class="result"><span class="muted">Введите свои результаты и нажмите «Проверить решение».</span></div>
 </section>
+
 <section class="card">
 <h2>Мои результаты</h2>
-<div class="kpi"><div><div class="big" id="score">0</div><small>проверок</small></div><div><div class="big" id="correct">0</div><small>верных</small></div><div><div class="big" id="errors">0</div><small>ошибок</small></div></div>
+<div class="kpi">
+<div><div class="big" id="score">0</div><small>проверок</small></div>
+<div><div class="big" id="correct">0</div><small>верных</small></div>
+<div><div class="big" id="errors">0</div><small>ошибок</small></div>
+</div>
 <div class="result" style="margin-top:18px"><b>Основная зона тренировки</b><div id="weak" class="muted" style="margin-top:6px">Пока данных недостаточно.</div></div>
-<h3>Тренировка</h3><p class="muted">После ошибки можно получить новое задание по тому же навыку.</p><button onclick="practice()">Дать тренировочное задание</button>
+<h3>Тренировка</h3>
+<p class="muted">После ошибки можно получить новое задание по тому же навыку.</p>
+<button id="practiceBtn">Дать тренировочное задание</button>
 <div id="practice" class="result"></div>
 </section>
 </div>
 </main>
+
 <script>
+'use strict';
+
 let stats={checks:0,correct:0,errors:{D:0,count:0,roots:0}};
 let current={a:2,b:-7,c:3};
-function calc(a,b,c){let D=b*b-4*a*c;if(D<0)return{D,count:0,roots:[]};if(D===0)return{D,count:1,roots:[-b/(2*a)]};let s=Math.sqrt(D);return{D,count:2,roots:[(-b+s)/(2*a),(-b-s)/(2*a)]}}
-function fmt(x){return Number.isInteger(x)?String(x):String(Number(x.toFixed(6))) }
-function refresh(){document.getElementById('score').textContent=stats.checks;document.getElementById('correct').textContent=stats.correct;document.getElementById('errors').textContent=stats.errors.D+stats.errors.count+stats.errors.roots;let e=stats.errors;let k=Object.entries(e).sort((a,b)=>b[1]-a[1])[0];document.getElementById('weak').textContent=k&&k[1]>0?({D:'вычисление дискриминанта',count:'определение количества корней',roots:'вычисление корней'}[k[0]])+' — '+k[1]+' ошибок':'Пока данных недостаточно.'}
-function checkSolution(){let a=+document.getElementById('a').value,b=+document.getElementById('b').value,c=+document.getElementById('c').value;syncEquation(a,b,c);if(a===0){document.getElementById('feedback').innerHTML='<span class="bad"><b>Ошибка:</b> a не может быть равно 0.</span>';return}current={a,b,c};let r=calc(a,b,c);let msgs=[];let all=true;let d=+document.getElementById('studentD').value;let cnt=+document.getElementById('count').value;let x1=document.getElementById('x1').value===''?null:+document.getElementById('x1').value;let x2=document.getElementById('x2').value===''?null:+document.getElementById('x2').value;
-if(Number.isNaN(d)||Math.abs(d-r.D)>1e-9){all=false;stats.errors.D++;msgs.push('<div class="bad">❌ Шаг 1: проверь вычисление D = b² − 4ac.</div><div class="hint">Подсказка: отдельно проверь b² и знак произведения 4ac.</div>')}else msgs.push('<div class="ok">✅ Дискриминант вычислен правильно.</div>');
-if(cnt!==r.count){all=false;stats.errors.count++;msgs.push('<div class="bad">❌ Шаг 2: количество корней не совпадает с эталоном.</div><div class="hint">Подсказка: сравни знак D с правилами D&lt;0, D=0, D&gt;0.</div>')}else msgs.push('<div class="ok">✅ Количество корней определено правильно.</div>');
-if(r.count===1){if(x1===null||Math.abs(x1-r.roots[0])>1e-7){all=false;stats.errors.roots++;msgs.push('<div class="bad">❌ Проверь единственный корень.</div><div class="hint">Подсказка: проверь знак в числителе и знаменатель 2a.</div>')}else msgs.push('<div class="ok">✅ Корень найден правильно.</div>')}
-if(r.count===2){if(x1===null||x2===null){all=false;stats.errors.roots++;msgs.push('<div class="bad">❌ Введи оба корня.</div>')}else{let g=[x1,x2].sort(), e=r.roots.slice().sort();if(Math.abs(g[0]-e[0])>1e-7||Math.abs(g[1]-e[1])>1e-7){all=false;stats.errors.roots++;msgs.push('<div class="bad">❌ Проверь значения x₁ и x₂.</div><div class="hint">Подсказка: подставь каждый найденный корень в исходное уравнение.</div>')}else msgs.push('<div class="ok">✅ Оба корня найдены правильно.</div>')}}
-stats.checks++;if(all){stats.correct++;document.getElementById('feedback').innerHTML='<b class="ok">🎉 Решение полностью верно.</b><div class="result">D = '+fmt(r.D)+'<br>Количество действительных корней: '+r.count+(r.count?'<br>Корни: '+r.roots.map(fmt).join(' и '):'')+'</div>'}else document.getElementById('feedback').innerHTML=msgs.join('');refresh()}
-function showExact(){let a=+document.getElementById('a').value,b=+document.getElementById('b').value,c=+document.getElementById('c').value;syncEquation(a,b,c);if(a===0)return;let r=calc(a,b,c);document.getElementById('feedback').innerHTML='<b>Эталонное решение</b><div class="result">D = '+fmt(r.D)+'<br>D'+(r.D<0?' < 0':r.D>0?' > 0':' = 0')+'<br>Количество корней: '+r.count+(r.count?'<br>Корни: '+r.roots.map(fmt).join(' и '):'')+'</div>'}
-function equationText(a,b,c){
-let s=(a===1?'':a===-1?'−':fmt(a))+'x²';
-if(b!==0)s+=(b>0?' + ':' - ')+(Math.abs(b)===1?'':fmt(Math.abs(b)))+'x';
-if(c!==0)s+=(c>0?' + ':' − ')+fmt(Math.abs(c));
-return s+' = 0'
+
+function calc(a,b,c){
+  const D=b*b-4*a*c;
+  if(D<0)return{D,count:0,roots:[]};
+  if(D===0)return{D,count:1,roots:[-b/(2*a)]};
+  const s=Math.sqrt(D);
+  return{D,count:2,roots:[(-b+s)/(2*a),(-b-s)/(2*a)]};
 }
-function syncEquation(a,b,c){document.getElementById('equation').textContent=equationText(a,b,c)}
+
+function fmt(x){return Number.isInteger(x)?String(x):String(Number(x.toFixed(6)))}
+
+function equationText(a,b,c){
+  let s='';
+  if(a!==0){
+    if(a===1)s='x²';
+    else if(a===-1)s='−x²';
+    else s=fmt(a)+'x²';
+  }
+  if(b!==0){
+    const absB=Math.abs(b);
+    const bx=(absB===1?'':fmt(absB))+'x';
+    if(s)s+=(b>0?' + ':' − ')+bx;
+    else s=(b<0?'−':'')+bx;
+  }
+  if(c!==0){
+    const absC=fmt(Math.abs(c));
+    if(s)s+=(c>0?' + ':' − ')+absC;
+    else s=(c<0?'−':'')+absC;
+  }
+  if(!s)s='0';
+  return s+' = 0';
+}
+
+function syncEquation(a,b,c){
+  document.getElementById('equation').textContent=equationText(a,b,c);
+}
+
 function clearStudentAnswer(message){
-document.getElementById('studentD').value='';
-document.getElementById('count').value='';
-document.getElementById('x1').value='';
-document.getElementById('x2').value='';
-document.getElementById('feedback').innerHTML='<span class="muted">'+message+'</span>';
+  document.getElementById('studentD').value='';
+  document.getElementById('count').value='';
+  document.getElementById('x1').value='';
+  document.getElementById('x2').value='';
+  document.getElementById('feedback').innerHTML='<span class="muted">'+message+'</span>';
+}
+
+function refresh(){
+  document.getElementById('score').textContent=stats.checks;
+  document.getElementById('correct').textContent=stats.correct;
+  document.getElementById('errors').textContent=stats.errors.D+stats.errors.count+stats.errors.roots;
+  const top=Object.entries(stats.errors).sort((a,b)=>b[1]-a[1])[0];
+  const labels={D:'вычисление дискриминанта',count:'определение количества корней',roots:'вычисление корней'};
+  document.getElementById('weak').textContent=top&&top[1]>0?labels[top[0]]+' — '+top[1]+' ошибок':'Пока данных недостаточно.';
+}
+
+function getMainCoefficients(){
+  return{
+    a:Number(document.getElementById('a').value),
+    b:Number(document.getElementById('b').value),
+    c:Number(document.getElementById('c').value)
+  };
+}
+
+function checkSolution(){
+  const {a,b,c}=getMainCoefficients();
+  if(![a,b,c].every(Number.isFinite)){
+    document.getElementById('feedback').innerHTML='<span class="bad"><b>Ошибка:</b> коэффициенты a, b и c должны быть числами.</span>';
+    return;
+  }
+  if(a===0){
+    document.getElementById('feedback').innerHTML='<span class="bad"><b>Ошибка:</b> a не может быть равно 0.</span>';
+    return;
+  }
+
+  current={a,b,c};
+  syncEquation(a,b,c);
+  const r=calc(a,b,c);
+  const msgs=[];
+  let all=true;
+
+  const dRaw=document.getElementById('studentD').value;
+  const cntRaw=document.getElementById('count').value;
+  const x1Raw=document.getElementById('x1').value;
+  const x2Raw=document.getElementById('x2').value;
+
+  const d=dRaw===''?null:Number(dRaw);
+  const cnt=cntRaw===''?null:Number(cntRaw);
+  const x1=x1Raw===''?null:Number(x1Raw);
+  const x2=x2Raw===''?null:Number(x2Raw);
+
+  if(d===null||!Number.isFinite(d)||Math.abs(d-r.D)>1e-9){
+    all=false;stats.errors.D++;
+    msgs.push('<div class="bad">❌ Шаг 1: проверь вычисление D = b² − 4ac.</div><div class="hint">Подсказка: отдельно проверь b² и знак произведения 4ac.</div>');
+  }else msgs.push('<div class="ok">✅ Дискриминант вычислен правильно.</div>');
+
+  if(cnt===null||cnt!==r.count){
+    all=false;stats.errors.count++;
+    msgs.push('<div class="bad">❌ Шаг 2: количество корней не совпадает с эталоном.</div><div class="hint">Подсказка: сравни знак D с правилами D&lt;0, D=0, D&gt;0.</div>');
+  }else msgs.push('<div class="ok">✅ Количество корней определено правильно.</div>');
+
+  if(r.count===1){
+    if(x1===null||!Number.isFinite(x1)||Math.abs(x1-r.roots[0])>1e-7){
+      all=false;stats.errors.roots++;
+      msgs.push('<div class="bad">❌ Проверь единственный корень.</div><div class="hint">Подсказка: проверь знак в числителе и знаменатель 2a.</div>');
+    }else msgs.push('<div class="ok">✅ Корень найден правильно.</div>');
+  }
+
+  if(r.count===2){
+    if(x1===null||x2===null||!Number.isFinite(x1)||!Number.isFinite(x2)){
+      all=false;stats.errors.roots++;
+      msgs.push('<div class="bad">❌ Введи оба корня.</div>');
+    }else{
+      const userRoots=[x1,x2].sort((m,n)=>m-n);
+      const exactRoots=r.roots.slice().sort((m,n)=>m-n);
+      if(Math.abs(userRoots[0]-exactRoots[0])>1e-7||Math.abs(userRoots[1]-exactRoots[1])>1e-7){
+        all=false;stats.errors.roots++;
+        msgs.push('<div class="bad">❌ Проверь значения x₁ и x₂.</div><div class="hint">Подсказка: подставь каждый найденный корень в исходное уравнение.</div>');
+      }else msgs.push('<div class="ok">✅ Оба корня найдены правильно.</div>');
+    }
+  }
+
+  stats.checks++;
+  if(all){
+    stats.correct++;
+    document.getElementById('feedback').innerHTML='<b class="ok">🎉 Решение полностью верно.</b><div class="result">D = '+fmt(r.D)+'<br>Количество действительных корней: '+r.count+(r.count?'<br>Корни: '+r.roots.map(fmt).join(' и '):'')+'</div>';
+  }else{
+    document.getElementById('feedback').innerHTML=msgs.join('');
+  }
+  refresh();
+}
+
+function showExact(){
+  const {a,b,c}=getMainCoefficients();
+  if(![a,b,c].every(Number.isFinite)||a===0)return;
+  syncEquation(a,b,c);
+  const r=calc(a,b,c);
+  document.getElementById('feedback').innerHTML='<b>Эталонное решение</b><div class="result">D = '+fmt(r.D)+'<br>D'+(r.D<0?' < 0':r.D>0?' > 0':' = 0')+'<br>Количество корней: '+r.count+(r.count?'<br>Корни: '+r.roots.map(fmt).join(' и '):'')+'</div>';
+}
+
+function newProblem(){
+  const list=[[1,-5,6],[3,-8,4],[1,-6,9],[1,2,5],[-2,7,-3],[2,1,-3],[4,-4,-3]];
+  const choices=list.filter(q=>q[0]!==current.a||q[1]!==current.b||q[2]!==current.c);
+  const q=choices[Math.floor(Math.random()*choices.length)];
+  current={a:q[0],b:q[1],c:q[2]};
+  document.getElementById('a').value=q[0];
+  document.getElementById('b').value=q[1];
+  document.getElementById('c').value=q[2];
+  syncEquation(q[0],q[1],q[2]);
+  clearStudentAnswer('Новое задание готово. Реши уравнение и введи результаты.');
 }
 
 function toggleOwnEquation(){
   const panel=document.getElementById('ownEquationPanel');
   const btn=document.getElementById('toggleOwnBtn');
-  const opening=panel.style.display==='none'||panel.style.display==='';
-  panel.style.display=opening?'block':'none';
-  btn.textContent=opening?'Скрыть ввод':'Проверить своё уравнение';
-  if(opening){
-    const field=document.getElementById('ownA');
-    if(field) field.focus();
+  const hidden=panel.classList.contains('hidden');
+  if(hidden){
+    panel.classList.remove('hidden');
+    btn.textContent='Скрыть ввод';
+    document.getElementById('ownA').focus();
+  }else{
+    panel.classList.add('hidden');
+    btn.textContent='Проверить своё уравнение';
   }
 }
 
@@ -121,9 +262,9 @@ function loadOwnEquation(){
     return;
   }
 
-  const a=Number(av), b=Number(bv), c=Number(cv);
+  const a=Number(av),b=Number(bv),c=Number(cv);
 
-  if(!Number.isFinite(a)||!Number.isFinite(b)||!Number.isFinite(c)){
+  if(![a,b,c].every(Number.isFinite)){
     msg.innerHTML='<span class="bad"><b>Ошибка:</b> введите числовые коэффициенты.</span>';
     return;
   }
@@ -141,17 +282,25 @@ function loadOwnEquation(){
   msg.innerHTML='<span class="ok">Уравнение загружено: <b>'+equationText(a,b,c)+'</b></span>';
 }
 
-function newProblem(){let list=[[1,-5,6],[3,-8,4],[1,-6,9],[1,2,5],[-2,7,-3],[2,1,-3],[4,-4,-3]];let previous=current;let choices=list.filter(q=>q[0]!==previous.a||q[1]!==previous.b||q[2]!==previous.c);let q=choices[Math.floor(Math.random()*choices.length)];current={a:q[0],b:q[1],c:q[2]};document.getElementById('a').value=q[0];document.getElementById('b').value=q[1];document.getElementById('c').value=q[2];syncEquation(q[0],q[1],q[2]);clearStudentAnswer('Новое задание готово. Реши уравнение и введи результаты.')}
 function practice(){
-let e=stats.errors;
-let skill=Object.entries(e).sort((a,b)=>b[1]-a[1])[0];
-let key=skill&&skill[1]>0?skill[0]:'D';
-let tasks={D:[[1,-6,8],[2,-5,-3],[1,4,-5]],count:[[1,2,5],[1,-6,9],[3,-8,4]],roots:[[1,-5,6],[2,1,-3],[-2,7,-3]]};
-let list=tasks[key];
-let q=list[Math.floor(Math.random()*list.length)];
-let labels={D:'Потренируй вычисление дискриминанта.',count:'Потренируй определение количества действительных корней.',roots:'Потренируй вычисление корней.'};
-document.getElementById('practice').innerHTML='<b>Тренировочное задание по выявленной зоне</b><div class="eq">'+equationText(q[0],q[1],q[2])+'</div><div>'+labels[key]+' Реши это уравнение самостоятельно. Основное задание слева при этом не изменяется.</div>';
+  const top=Object.entries(stats.errors).sort((a,b)=>b[1]-a[1])[0];
+  const key=top&&top[1]>0?top[0]:'D';
+  const tasks={D:[[1,-6,8],[2,-5,-3],[1,4,-5]],count:[[1,2,5],[1,-6,9],[3,-8,4]],roots:[[1,-5,6],[2,1,-3],[-2,7,-3]]};
+  const labels={D:'Потренируй вычисление дискриминанта.',count:'Потренируй определение количества действительных корней.',roots:'Потренируй вычисление корней.'};
+  const list=tasks[key];
+  const q=list[Math.floor(Math.random()*list.length)];
+  document.getElementById('practice').innerHTML='<b>Тренировочное задание по выявленной зоне</b><div class="eq">'+equationText(q[0],q[1],q[2])+'</div><div>'+labels[key]+' Реши это уравнение самостоятельно. Основное задание слева при этом не изменяется.</div>';
 }
+
+document.getElementById('checkBtn').addEventListener('click',checkSolution);
+document.getElementById('showBtn').addEventListener('click',showExact);
+document.getElementById('newBtn').addEventListener('click',newProblem);
+document.getElementById('toggleOwnBtn').addEventListener('click',toggleOwnEquation);
+document.getElementById('loadOwnBtn').addEventListener('click',loadOwnEquation);
+document.getElementById('practiceBtn').addEventListener('click',practice);
+
+syncEquation(current.a,current.b,current.c);
 refresh();
 </script>
-</body></html>
+</body>
+</html>
